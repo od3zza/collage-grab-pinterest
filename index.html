@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Collage Grab</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="app">
+<h1>Collage Grab</h1>
+<p>Capture Pinterest animated canvases as WebM videos.</p>
+
+<div class="controls">
+<label>
+FPS
+<select id="fps">
+<option value="24">24</option>
+<option value="30" selected>30</option>
+<option value="60">60</option>
+</select>
+</label>
+
+<label>
+Duration (seconds)
+<input type="number" id="duration" value="5" min="3" max="10">
+</label>
+</div>
+
+<button id="copyScript">Copy Recorder Script</button>
+<textarea id="output" readonly></textarea>
+<p class="hint">Paste the copied script into the Pinterest DevTools Console.</p>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
