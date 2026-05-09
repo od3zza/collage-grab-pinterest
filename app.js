@@ -1,78 +1,48 @@
-const fpsInput=document.getElementById("fps");
-const durationInput=document.getElementById("duration");
-const output=document.getElementById("output");
-const copyBtn=document.getElementById("copyScript");
+const button=document.getElementById("downloadBtn");
+const urlInput=document.getElementById("url");
+const formatInput=document.getElementById("format");
+const status=document.getElementById("status");
 
-function generateScript(fps,duration){
-return `(async () => {
-const FPS=${fps};
-const DURATION=${duration};
+button.addEventListener("click",async()=>{
 
-const canvas=document.querySelector('canvas[data-test-id="shuffle-renderer-canvas"]');
+const pinterestUrl=urlInput.value.trim();
+const format=formatInput.value;
 
-if(!canvas){
-console.error("Canvas not found");
+if(!pinterestUrl){
+alert("Paste a Pinterest URL");
 return;
 }
 
-let titleEl=document.querySelector('[data-test-id="pin-title-wrapper"] h1');
-let fileName="untitled";
+status.textContent="Processing...";
 
-if(titleEl&&titleEl.textContent.trim()){
-fileName=titleEl.textContent.trim();
-}
+try{
 
-fileName=fileName
-.replace(/[\\/:*?"<>|]/g,"")
-.replace(/\\s+/g,"_")
-.slice(0,100);
-
-const stream=canvas.captureStream(FPS);
-
-const recorder=new MediaRecorder(stream,{
-mimeType:"video/webm"
+const response=await fetch("http://localhost:3000/capture",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({url:pinterestUrl,format})
 });
 
-const chunks=[];
+if(!response.ok){
+throw new Error("Failed");
+}
 
-recorder.ondataavailable=e=>{
-if(e.data.size>0)chunks.push(e.data);
-};
+const blob=await response.blob();
 
-recorder.onstop=()=>{
-const blob=new Blob(chunks,{type:"video/webm"});
-const url=URL.createObjectURL(blob);
+const downloadUrl=URL.createObjectURL(blob);
 
 const a=document.createElement("a");
-a.href=url;
-a.download=fileName+".webm";
+a.href=downloadUrl;
+a.download=`collage.${format}`;
 a.click();
 
-URL.revokeObjectURL(url);
-};
+URL.revokeObjectURL(downloadUrl);
 
-recorder.start();
+status.textContent="Done";
 
-setTimeout(()=>{
-recorder.stop();
-},DURATION*1000);
-})();`;
+}catch(err){
+console.error(err);
+status.textContent="Error";
 }
 
-function updateOutput(){
-output.value=generateScript(fpsInput.value,durationInput.value);
-}
-
-fpsInput.addEventListener("change",updateOutput);
-durationInput.addEventListener("input",updateOutput);
-
-copyBtn.addEventListener("click",async()=>{
-await navigator.clipboard.writeText(output.value);
-copyBtn.textContent="Copied!";
-
-setTimeout(()=>{
-copyBtn.textContent="Copy Recorder Script";
-},1500);
 });
-
-updateOutput();
